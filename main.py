@@ -13,12 +13,15 @@ pygame.display.set_caption("Platformer Game")
 
 #Sprite guy
 sprite_sheet = pygame.image.load("assets/sprites.png")
+idle_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/1_Cat_Idle-Sheet.png")
+idle_sprite_sheet = pygame.transform.scale(idle_sprite_sheet, (100, 100))
 
 # Right frames animation?
 frame_width, frame_height = 500/6, 100
+frame_width2, frame_height2 = 30, 30
 print(frame_width, frame_height)
 running_frames = [sprite_sheet.subsurface(pygame.Rect(i * frame_width-83, 0, frame_width, frame_height)) for i in range(1, 7)]
-# running_frames = [sprite_sheet.subsurface(pygame.Rect(, , , ))]
+idle_frames = [idle_sprite_sheet(pygame.Rect(x * frame_width2, 0, frame_width2, frame_height2)) for x in range(8)]
 
 jump_up_frame = sprite_sheet.subsurface(pygame.Rect(0, 163, frame_width, frame_height))
 jump_down_frame = sprite_sheet.subsurface(pygame.Rect(frame_width, 163, frame_width, frame_height))
@@ -30,7 +33,9 @@ jump_power = -10
 player_velocity_y = 0
 on_ground = False
 frame_index = 0
+idle_index = 0
 animation_timer = 0
+idle_timer = 0
 facing_right = True
 
 # Platform stuf
@@ -91,7 +96,10 @@ while running:
                 frame_index = (frame_index + 1) % len(running_frames)
             current_frame = running_frames[frame_index]
         else:
-            current_frame = running_frames[0]
+            idle_timer += 1
+            if idle_timer % 10 == 0:
+                idle_index = (idle_index + 1) % len(idle_frames)
+            current_frame = idle_frames[idle_index]
     else:
         current_frame = jump_up_frame if player_velocity_y < 0 else jump_down_frame
     
