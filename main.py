@@ -12,16 +12,17 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Platformer Game")
 
 #Sprite guy
-sprite_sheet = pygame.image.load("assets/sprites.png")
+running_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/2_Cat_Run-Sheet.png")
 idle_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/1_Cat_Idle-Sheet.png")
-idle_sprite_sheet = pygame.transform.scale(idle_sprite_sheet, (100, 100))
+sprite_sheet = pygame.image.load("assets/sprites.png")
+#idle_sprite_sheet = pygame.transform.scale(idle_sprite_sheet, (100, 100))
 
 # Right frames animation?
+frame_width_run, frame_height_run = 20, 20
+frame_width_idle, frame_height_idle = 20, 20
 frame_width, frame_height = 500/6, 100
-frame_width2, frame_height2 = 30, 30
-print(frame_width, frame_height)
-running_frames = [sprite_sheet.subsurface(pygame.Rect(i * frame_width-83, 0, frame_width, frame_height)) for i in range(1, 7)]
-idle_frames = [idle_sprite_sheet(pygame.Rect(x * frame_width2, 0, frame_width2, frame_height2)) for x in range(8)]
+running_frames = [running_sprite_sheet.subsurface(pygame.Rect(i * frame_width_run, 0, frame_width_run, frame_height_run)) for i in range(1, 10)]
+idle_frames = [idle_sprite_sheet.subsurface(pygame.Rect(x * frame_width_idle, 0, frame_width_idle, frame_height_idle)) for x in range(8)]
 
 jump_up_frame = sprite_sheet.subsurface(pygame.Rect(0, 163, frame_width, frame_height))
 jump_down_frame = sprite_sheet.subsurface(pygame.Rect(frame_width, 163, frame_width, frame_height))
@@ -76,10 +77,10 @@ while running:
     player_y += player_velocity_y
     
     # Collision
-    player_rect = pygame.Rect(player_x, player_y, frame_width, frame_height)
+    player_rect = pygame.Rect(player_x, player_y, frame_width_run, frame_height_run)
     for platform in platforms:
         if player_rect.colliderect(platform) and player_velocity_y > 0:
-            player_y = platform.top - frame_height
+            player_y = platform.top - frame_height_run
             player_velocity_y = 0
             on_ground = True
     
@@ -118,3 +119,6 @@ while running:
     clock.tick(30)
 
 pygame.quit()
+
+
+
