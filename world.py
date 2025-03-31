@@ -27,11 +27,20 @@ class World:
     def __init__(self, world_width, screen_height, assets):
         self.world_width = world_width
         self.screen_height = screen_height
-        self.segment_width = 50
+        self.tile_width = 94  # Width of each tile
+        self.segment_width = self.tile_width * 2  # Two tiles per segment
+        self.current_era = "past"  # Initialize current era
         
         self.platforms = []  # Both ground and floating platforms
         self.pillars = []    # Obstacles on ground platforms
         self.switches = []   # Era switch blocks
+        
+        # Load tile images
+        self.past_tile = pygame.image.load("assets/game_elements/yellow_tile_1.png")
+        self.future_tile = pygame.image.load("assets/game_elements/green_tile_1.png")
+        # Scale tiles to match platform height
+        self.past_tile = pygame.transform.scale(self.past_tile, (94, 30))
+        self.future_tile = pygame.transform.scale(self.future_tile, (94, 30))
         
         # Generate initial platforms
         self.generate_initial_platforms()
@@ -42,15 +51,15 @@ class World:
         base_ground_y = self.screen_height - 120
         
         # First, ensure there's a platform at the spawn point (around x=100)
-        spawn_platform = Platform(50, base_ground_y, self.segment_width * 2, 20, "ground", None)
+        spawn_platform = Platform(50, base_ground_y, self.tile_width * 3, 30, "ground", None)  # 3 tiles wide
         self.platforms.append(spawn_platform)
         
-        # Add a time switcher at the spawn point
-        spawn_switch = pygame.Rect(100, base_ground_y - 50, 40, 40)
-        self.switches.append(spawn_switch)
+        # Add initial time switch above spawn platform
+        switch_rect = pygame.Rect(100, base_ground_y - 70, 40, 40)  # 70 pixels above the platform
+        self.switches.append(switch_rect)
         
         # Generate initial platforms
-        x = 150  # Start after the spawn platform
+        x = 50 + self.tile_width * 3  # Start after the spawn platform
         while x < self.world_width:
             self.generate_platform_segment(x, base_ground_y)
             x += self.segment_width
@@ -60,20 +69,30 @@ class World:
         if random.random() < 0.2:
             return
             
-        # Use a smaller variation for smoother terrain.
+        # Use a smaller variation for smoother terrain
         y_variation = random.randint(-5, 5)
         y = base_ground_y + y_variation
-        platform = Platform(x, y, self.segment_width, 20, "ground", None)
+        
+        # Create platform with width based on tile size
+        num_tiles = random.randint(2, 3)  # 2 or 3 tiles per platform
+        platform = Platform(x, y, self.tile_width * num_tiles, 30, "ground", None)
         self.platforms.append(platform)
         
         # 15% chance to add a pillar
         if random.random() < 0.15:
             pillar_width = 30
             pillar_height = random.randint(100, 200)
-            pillar_x = x + (self.segment_width - pillar_width) // 2
+            pillar_x = x + (self.tile_width - pillar_width) // 2
             pillar_y = y - pillar_height
             pillar = Pillar(pillar_x, pillar_y, pillar_width, pillar_height, "normal", None)
             self.pillars.append(pillar)
+            
+        # 10% chance to add a time switch above the platform
+        if random.random() < 0.10:
+            switch_x = x + (self.tile_width * num_tiles // 2) - 20  # Center on platform
+            switch_y = y - 70  # 70 pixels above the platform
+            switch_rect = pygame.Rect(switch_x, switch_y, 40, 40)
+            self.switches.append(switch_rect)
             
     def generate_floating_platforms(self):
         # Generate floating platforms randomly in the level.
@@ -111,16 +130,32 @@ class World:
             self.generate_platform_segment(last_platform_x + self.segment_width, self.screen_height - 120)
             last_platform_x += self.segment_width
             
-    def draw(self, screen, camera_x, current_era):
-        # Draw all platforms.
+    def draw(self, screen, camera_x):
+        # Draw platforms with appropriate tile based on era
+        current_tile = self.past_tile if self.current_era == "past" else self.future_tile
+        
         for platform in self.platforms:
-            platform.draw(screen, camera_x, current_era)
-        # In the past era, draw pillars.
-        if current_era == "past":
+            # Each tile is 94 pixels wide, but we'll overlap them by 2 pixels
+            tile_width = 94
+            overlap = 2  # How many pixels to overlap
+            platform_width = platform.rect.width
+            
+            # Calculate number of tiles needed (round down to avoid overflow)
+            num_tiles = platform_width // (tile_width - overlap)
+            
+            # Draw the tiles with slight overlap
+            for i in range(num_tiles):
+                x_pos = platform.rect.x + (i * (tile_width - overlap)) - camera_x
+                screen.blit(current_tile, (x_pos, platform.rect.y))
+        
+        # Draw pillars only in past era
+        if self.current_era == "past":
             for pillar in self.pillars:
-                pillar.draw(screen, camera_x)
-        # Draw era switches.
-        for sw in self.switches:
-            draw_rect = sw.copy()
-            draw_rect.x -= camera_x
-            pygame.draw.rect(screen, (0, 0, 255), draw_rect)  # Blue rectangles for switches
+                pygame.draw.rect(screen, (100, 100, 100), 
+                               (pillar.rect.x - camera_x, pillar.rect.y, pillar.rect.width, pillar.rect.height))
+        
+        # Draw switches
+        for switch in self.switches:
+            color = (0, 0, 255) if self.current_era == "past" else (255, 165, 0)
+            pygame.draw.rect(screen, color, 
+                           (switch.x - camera_x, switch.y, switch.width, switch.height))

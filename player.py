@@ -22,36 +22,22 @@ class Player:
             self.on_ground = False
             
     def update(self, dt, world, current_era):
-        # Apply gravity.
+        # Apply gravity
         self.vel_y += GRAVITY * dt
         
-        # Move horizontally first
+        # Store old position for collision resolution
+        old_x = self.rect.x
+        old_y = self.rect.y
+        
+        # Update position
         self.rect.x += int(self.vel_x * dt)
-        
-        # Check horizontal collisions
-        for platform in world.platforms:
-            if self.rect.colliderect(platform.rect):
-                if self.vel_x > 0:  # Moving right
-                    self.rect.right = platform.rect.left
-                elif self.vel_x < 0:  # Moving left
-                    self.rect.left = platform.rect.right
-        
-        # Check pillar collisions horizontally
-        if current_era == "past":
-            for pillar in world.pillars:
-                if self.rect.colliderect(pillar.rect):
-                    if self.vel_x > 0:  # Moving right
-                        self.rect.right = pillar.rect.left
-                    elif self.vel_x < 0:  # Moving left
-                        self.rect.left = pillar.rect.right
-        
-        # Move vertically
         self.rect.y += int(self.vel_y * dt)
         
-        # Check vertical collisions
+        # Check collisions with platforms
         self.on_ground = False
         for platform in world.platforms:
             if self.rect.colliderect(platform.rect):
+                # First handle vertical collisions
                 if self.vel_y > 0:  # Falling
                     self.rect.bottom = platform.rect.top
                     self.vel_y = 0
@@ -59,18 +45,27 @@ class Player:
                 elif self.vel_y < 0:  # Jumping
                     self.rect.top = platform.rect.bottom
                     self.vel_y = 0
+                
+                # Only handle horizontal collisions if we're not landing on the platform
+                if not self.on_ground:
+                    if self.vel_x > 0:  # Moving right
+                        if old_x + self.rect.width <= platform.rect.left:
+                            self.rect.right = platform.rect.left
+                    elif self.vel_x < 0:  # Moving left
+                        if old_x >= platform.rect.right:
+                            self.rect.left = platform.rect.right
         
-        # Check pillar collisions vertically
+        # Check collisions with pillars in past era
         if current_era == "past":
             for pillar in world.pillars:
                 if self.rect.colliderect(pillar.rect):
-                    if self.vel_y > 0:  # Falling
-                        self.rect.bottom = pillar.rect.top
-                        self.vel_y = 0
-                        self.on_ground = True
-                    elif self.vel_y < 0:  # Jumping
-                        self.rect.top = pillar.rect.bottom
-                        self.vel_y = 0
+                    # Only handle horizontal collisions for pillars
+                    if self.vel_x > 0:  # Moving right
+                        if old_x + self.rect.width <= pillar.rect.left:
+                            self.rect.right = pillar.rect.left
+                    elif self.vel_x < 0:  # Moving left
+                        if old_x >= pillar.rect.right:
+                            self.rect.left = pillar.rect.right
 
     def draw(self, screen, camera_x):
         draw_rect = self.rect.copy()
