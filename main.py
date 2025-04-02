@@ -19,7 +19,7 @@ sprite_sheet = pygame.image.load("assets/sprites.png")
 
 # Right frames animation?
 frame_width_run, frame_height_run = 20, 20
-frame_width_idle, frame_height_idle = 20, 20
+frame_width_idle, frame_height_idle = 10, 10
 frame_width, frame_height = 500/6, 100
 running_frames = [running_sprite_sheet.subsurface(pygame.Rect(i * frame_width_run, 0, frame_width_run, frame_height_run)) for i in range(1, 10)]
 idle_frames = [idle_sprite_sheet.subsurface(pygame.Rect(x * frame_width_idle, 0, frame_width_idle, frame_height_idle)) for x in range(8)]
