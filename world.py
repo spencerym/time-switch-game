@@ -58,42 +58,93 @@ class World:
         switch_rect = pygame.Rect(100, base_ground_y - 70, 40, 40)  # 70 pixels above the platform
         self.switches.append(switch_rect)
         
-        # Generate initial platforms
+        # Generate initial platforms with controlled gaps
         x = 50 + self.tile_width * 3  # Start after the spawn platform
-        while x < self.world_width:
-            self.generate_platform_segment(x, base_ground_y)
-            x += self.segment_width
-            
-    def generate_platform_segment(self, x, base_ground_y):
-        # 20% chance to create a gap (hole)
-        if random.random() < 0.2:
-            return
-            
-        # Use a smaller variation for smoother terrain
-        y_variation = random.randint(-5, 5)
-        y = base_ground_y + y_variation
+        last_y = base_ground_y
+        gap_counter = 0  # Track consecutive gaps
+        last_platform = spawn_platform
         
+        while x < self.world_width:
+            # Only allow up to 2 consecutive gaps
+            if gap_counter >= 2:
+                # Force a platform after 2 gaps
+                next_y = last_y  # Keep same height for forced platform
+                self.generate_platform_segment(x, next_y)
+                last_platform = self.platforms[-1]
+                gap_counter = 0
+            else:
+                # 20% chance for a gap
+                if random.random() < 0.2:
+                    gap_counter += 1
+                else:
+                    # Calculate maximum allowed gap based on height difference
+                    max_jump_height = 150  # Maximum height difference
+                    max_jump_distance = self.tile_width * 2  # Maximum gap of 2 tiles
+                    
+                    # Calculate maximum allowed horizontal gap based on vertical distance
+                    vertical_distance = abs(next_y - last_y) if 'next_y' in locals() else 0
+                    max_horizontal_gap = max_jump_distance * (1 - (vertical_distance / max_jump_height))
+                    max_horizontal_gap = max(self.tile_width, min(max_jump_distance, max_horizontal_gap))
+                    
+                    # Generate random gap up to maximum allowed
+                    horizontal_gap = random.randint(self.tile_width, int(max_horizontal_gap))
+                    
+                    # Calculate next platform's y position with controlled variation
+                    y_variation = random.randint(-max_jump_height, max_jump_height)
+                    next_y = last_y + y_variation
+                    
+                    # Ensure the platform stays within playable bounds
+                    next_y = max(base_ground_y - 150, min(base_ground_y + 50, next_y))
+                    
+                    # Generate the platform segment
+                    self.generate_platform_segment(x + horizontal_gap, next_y)
+                    last_platform = self.platforms[-1]
+                    last_y = next_y
+                    gap_counter = 0
+            
+            x += self.segment_width
+
+    def generate_platform_segment(self, x, y):
         # Create platform with width based on tile size
         num_tiles = random.randint(2, 3)  # 2 or 3 tiles per platform
-        platform = Platform(x, y, self.tile_width * num_tiles, 30, "ground", None)
+        platform_width = self.tile_width * num_tiles
+        
+        # Check if this platform would overlap with any existing platform
+        new_platform = pygame.Rect(x, y, platform_width, 30)
+        for existing_platform in self.platforms:
+            if new_platform.colliderect(existing_platform.rect):
+                return  # Skip this platform if it would overlap
+        
+        # If no overlap, create the platform
+        platform = Platform(x, y, platform_width, 30, "ground", None)
         self.platforms.append(platform)
         
-        # 15% chance to add a pillar
-        if random.random() < 0.15:
-            pillar_width = 30
-            pillar_height = random.randint(100, 200)
-            pillar_x = x + (self.tile_width - pillar_width) // 2
-            pillar_y = y - pillar_height
-            pillar = Pillar(pillar_x, pillar_y, pillar_width, pillar_height, "normal", None)
+        # 30% chance to add a pillar (increased from 15%)
+        if random.random() < 0.30:
+            # 70% chance for vertical pillar, 30% for horizontal
+            if random.random() < 0.70:
+                # Vertical pillar
+                pillar_width = 30
+                pillar_height = random.randint(100, 200)
+                pillar_x = x + (self.tile_width - pillar_width) // 2
+                pillar_y = y - pillar_height
+                pillar = Pillar(pillar_x, pillar_y, pillar_width, pillar_height, "vertical", None)
+            else:
+                # Horizontal pillar
+                pillar_width = random.randint(100, 200)
+                pillar_height = 30
+                pillar_x = x + (self.tile_width - pillar_width) // 2
+                pillar_y = y - 100  # Fixed height above platform for horizontal pillars
+                pillar = Pillar(pillar_x, pillar_y, pillar_width, pillar_height, "horizontal", None)
             self.pillars.append(pillar)
             
         # 10% chance to add a time switch above the platform
         if random.random() < 0.10:
-            switch_x = x + (self.tile_width * num_tiles // 2) - 20  # Center on platform
+            switch_x = x + (platform_width // 2) - 20  # Center on platform
             switch_y = y - 70  # 70 pixels above the platform
             switch_rect = pygame.Rect(switch_x, switch_y, 40, 40)
             self.switches.append(switch_rect)
-            
+
     def generate_floating_platforms(self):
         # Generate floating platforms randomly in the level.
         count = int(self.world_width / 300)  # roughly one every 300 pixels
@@ -125,10 +176,32 @@ class World:
             
     def update(self, player_x):
         # Generate new platforms as the player moves right
-        last_platform_x = max(p.rect.x for p in self.platforms)
-        while last_platform_x < player_x + self.world_width:
-            self.generate_platform_segment(last_platform_x + self.segment_width, self.screen_height - 120)
-            last_platform_x += self.segment_width
+        if player_x > self.platforms[-1].rect.x - 1000:  # Start generating 1000 pixels before the end
+            last_platform = self.platforms[-1]
+            last_y = last_platform.rect.y
+            
+            # Calculate maximum allowed gap based on height difference
+            max_jump_height = 150  # Maximum height difference
+            max_jump_distance = self.tile_width * 2  # Maximum gap of 2 tiles
+            
+            # Calculate maximum allowed horizontal gap based on vertical distance
+            vertical_distance = abs(next_y - last_y) if 'next_y' in locals() else 0
+            max_horizontal_gap = max_jump_distance * (1 - (vertical_distance / max_jump_height))
+            max_horizontal_gap = max(self.tile_width, min(max_jump_distance, max_horizontal_gap))
+            
+            # Generate random gap up to maximum allowed
+            horizontal_gap = random.randint(self.tile_width, int(max_horizontal_gap))
+            
+            # Calculate next platform's y position with controlled variation
+            y_variation = random.randint(-max_jump_height, max_jump_height)
+            next_y = last_y + y_variation
+            
+            # Ensure the platform stays within playable bounds
+            base_ground_y = self.screen_height - 120
+            next_y = max(base_ground_y - 150, min(base_ground_y + 50, next_y))
+            
+            # Generate new platform segment with the calculated gap
+            self.generate_platform_segment(last_platform.rect.x + horizontal_gap, next_y)
             
     def draw(self, screen, camera_x):
         # Draw platforms with appropriate tile based on era
