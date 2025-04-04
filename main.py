@@ -25,6 +25,9 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 WORLD_WIDTH = 3000
 clock = pygame.time.Clock()
 
+# Initialize current background
+current_bg = backgrounds["past"]
+
 # Initialize game objects
 player = Player(100, SCREEN_HEIGHT - 200, None)  # None for assets since we're not using them yet
 world = World(WORLD_WIDTH, SCREEN_HEIGHT, None)  # None for assets since we're not using them yet
@@ -44,21 +47,19 @@ while running:
             if event.key == pygame.K_f:
                 # Toggle era when F is pressed
                 world.current_era = "future" if world.current_era == "past" else "past"
+                # Update background based on era
+                current_bg = backgrounds["future"] if world.current_era == "future" else backgrounds["past"]
 
     # Update
     keys = pygame.key.get_pressed()
     player.handle_input(keys)
     player.update(dt, world, world.current_era)
     world.update(player.rect.x)
-    
-    # Update camera position to follow player
-    camera_x = max(0, player.rect.x - SCREEN_WIDTH // 2)
 
     # Draw
     screen.fill((0, 0, 0))  # Clear screen
     
     # Draw background with offset for future era
-    current_bg = backgrounds["future"] if world.current_era == "future" else backgrounds["past"]
     if world.current_era == "future":
         screen.blit(current_bg, (0, 2))  # Move future background down by 2 pixels
     else:

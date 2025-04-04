@@ -77,24 +77,27 @@ class World:
                 if random.random() < 0.2:
                     gap_counter += 1
                 else:
-                    # Calculate maximum allowed gap based on height difference
-                    max_jump_height = 150  # Maximum height difference
-                    max_jump_distance = self.tile_width * 2  # Maximum gap of 2 tiles
+                    # Maximum jump height and distance
+                    max_jump_height = 140  # Slightly less than actual jump height
+                    max_horizontal_distance = 94 * 2  # Maximum horizontal distance when at same height (2 tiles)
                     
-                    # Calculate maximum allowed horizontal gap based on vertical distance
-                    vertical_distance = abs(next_y - last_y) if 'next_y' in locals() else 0
-                    max_horizontal_gap = max_jump_distance * (1 - (vertical_distance / max_jump_height))
-                    max_horizontal_gap = max(self.tile_width, min(max_jump_distance, max_horizontal_gap))
+                    # First determine the vertical distance we want
+                    vertical_distance = random.randint(-max_jump_height, max_jump_height)
+                    
+                    # Calculate maximum allowed horizontal distance based on vertical distance
+                    if vertical_distance != 0:
+                        # Use distance formula: max_total_distance² = horizontal_distance² + vertical_distance²
+                        max_horizontal_distance = (max_horizontal_distance**2 - vertical_distance**2)**0.5
+                        max_horizontal_distance = max(94, min(max_horizontal_distance, 94 * 2))
                     
                     # Generate random gap up to maximum allowed
-                    horizontal_gap = random.randint(self.tile_width, int(max_horizontal_gap))
+                    horizontal_gap = random.randint(94, int(max_horizontal_distance))
                     
-                    # Calculate next platform's y position with controlled variation
-                    y_variation = random.randint(-max_jump_height, max_jump_height)
-                    next_y = last_y + y_variation
+                    # Calculate next platform's y position
+                    next_y = last_y + vertical_distance
                     
                     # Ensure the platform stays within playable bounds
-                    next_y = max(base_ground_y - 150, min(base_ground_y + 50, next_y))
+                    next_y = max(base_ground_y - max_jump_height, min(base_ground_y + max_jump_height, next_y))
                     
                     # Generate the platform segment
                     self.generate_platform_segment(x + horizontal_gap, next_y)
@@ -102,7 +105,7 @@ class World:
                     last_y = next_y
                     gap_counter = 0
             
-            x += self.segment_width
+            x += 94  # Move by one tile width instead of segment_width
 
     def generate_platform_segment(self, x, y):
         # Create platform with width based on tile size
@@ -180,28 +183,31 @@ class World:
             last_platform = self.platforms[-1]
             last_y = last_platform.rect.y
             
-            # Calculate maximum allowed gap based on height difference
-            max_jump_height = 150  # Maximum height difference
-            max_jump_distance = self.tile_width * 2  # Maximum gap of 2 tiles
+            # Maximum jump height and distance
+            max_jump_height = 140  # Slightly less than actual jump height
+            max_horizontal_distance = 94 * 2  # Maximum horizontal distance when at same height (2 tiles)
             
-            # Calculate maximum allowed horizontal gap based on vertical distance
-            vertical_distance = abs(next_y - last_y) if 'next_y' in locals() else 0
-            max_horizontal_gap = max_jump_distance * (1 - (vertical_distance / max_jump_height))
-            max_horizontal_gap = max(self.tile_width, min(max_jump_distance, max_horizontal_gap))
+            # First determine the vertical distance we want
+            vertical_distance = random.randint(-max_jump_height, max_jump_height)
+            
+            # Calculate maximum allowed horizontal distance based on vertical distance
+            if vertical_distance != 0:
+                # Use distance formula: max_total_distance² = horizontal_distance² + vertical_distance²
+                max_horizontal_distance = (max_horizontal_distance**2 - vertical_distance**2)**0.5
+                max_horizontal_distance = max(94, min(max_horizontal_distance, 94 * 2))
             
             # Generate random gap up to maximum allowed
-            horizontal_gap = random.randint(self.tile_width, int(max_horizontal_gap))
+            horizontal_gap = random.randint(94, int(max_horizontal_distance))
             
-            # Calculate next platform's y position with controlled variation
-            y_variation = random.randint(-max_jump_height, max_jump_height)
-            next_y = last_y + y_variation
+            # Calculate next platform's y position
+            next_y = last_y + vertical_distance
             
             # Ensure the platform stays within playable bounds
             base_ground_y = self.screen_height - 120
-            next_y = max(base_ground_y - 150, min(base_ground_y + 50, next_y))
+            next_y = max(base_ground_y - max_jump_height, min(base_ground_y + max_jump_height, next_y))
             
             # Generate new platform segment with the calculated gap
-            self.generate_platform_segment(last_platform.rect.x + horizontal_gap, next_y)
+            self.generate_platform_segment(last_platform.rect.x + last_platform.rect.width + horizontal_gap, next_y)
             
     def draw(self, screen, camera_x):
         # Draw platforms with appropriate tile based on era
