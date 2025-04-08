@@ -92,7 +92,7 @@ while running:
         player_x += player_speed
         moving = True
         facing_right = True
-    if keys[pygame.K_SPACE] and on_ground:
+    if keys[pygame.K_UP] and on_ground:
         player_velocity_y = jump_power
         on_ground = False
     
@@ -120,7 +120,7 @@ while running:
         if jump_timer % 4 == 0:
             jump_index = (jump_index + 1) % len(jump_up_frames)
         current_frame = jump_up_frames[jump_index]
-    elif player_velocity_y > 1:  # Small buffer to avoid flicker
+    elif player_velocity_y > 1 or not on_ground:  
         # Falling down
         fall_timer += 1
         if fall_timer % 3 == 0:
