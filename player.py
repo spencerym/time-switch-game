@@ -60,13 +60,25 @@ class Player:
         if current_era == "past":
             for pillar in world.pillars:
                 if self.rect.colliderect(pillar.rect):
-                    # Only handle horizontal collisions for pillars
-                    if self.vel_x > 0:  # Moving right
-                        if old_x + self.rect.width <= pillar.rect.left:
-                            self.rect.right = pillar.rect.left
-                    elif self.vel_x < 0:  # Moving left
-                        if old_x >= pillar.rect.right:
-                            self.rect.left = pillar.rect.right
+                    # Handle all sides of the pillar
+                    # First check if this is a vertical collision
+                    if old_y + self.rect.height <= pillar.rect.top or old_y >= pillar.rect.bottom:
+                        # Vertical collision
+                        if self.vel_y > 0:  # Falling
+                            self.rect.bottom = pillar.rect.top
+                            self.vel_y = 0
+                            self.on_ground = True
+                        elif self.vel_y < 0:  # Jumping
+                            self.rect.top = pillar.rect.bottom
+                            self.vel_y = 0
+                    else:
+                        # Horizontal collision
+                        if self.vel_x > 0:  # Moving right
+                            if old_x + self.rect.width <= pillar.rect.left:
+                                self.rect.right = pillar.rect.left
+                        elif self.vel_x < 0:  # Moving left
+                            if old_x >= pillar.rect.right:
+                                self.rect.left = pillar.rect.right
 
     def draw(self, screen, camera_x):
         draw_rect = self.rect.copy()

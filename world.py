@@ -78,8 +78,8 @@ class World:
                     gap_counter += 1
                 else:
                     # Maximum jump height and distance
-                    max_jump_height = 140  # Slightly less than actual jump height
-                    max_horizontal_distance = 94 * 2  # Maximum horizontal distance when at same height (2 tiles)
+                    max_jump_height = 140  # Maximum jump height
+                    max_horizontal_distance = int(94 * 1.5)  # Maximum horizontal distance when at same height (1.5 tiles)
                     
                     # First determine the vertical distance we want
                     vertical_distance = random.randint(-max_jump_height, max_jump_height)
@@ -87,8 +87,9 @@ class World:
                     # Calculate maximum allowed horizontal distance based on vertical distance
                     if vertical_distance != 0:
                         # Use distance formula: max_total_distance² = horizontal_distance² + vertical_distance²
-                        max_horizontal_distance = (max_horizontal_distance**2 - vertical_distance**2)**0.5
-                        max_horizontal_distance = max(94, min(max_horizontal_distance, 94 * 2))
+                        max_total_distance = int(94 * 1.5)  # Maximum total distance (1.5 tiles)
+                        max_horizontal_distance = (max_total_distance**2 - vertical_distance**2)**0.5
+                        max_horizontal_distance = max(94, min(max_horizontal_distance, int(94 * 1.5)))
                     
                     # Generate random gap up to maximum allowed
                     horizontal_gap = random.randint(94, int(max_horizontal_distance))
@@ -97,7 +98,9 @@ class World:
                     next_y = last_y + vertical_distance
                     
                     # Ensure the platform stays within playable bounds
-                    next_y = max(base_ground_y - max_jump_height, min(base_ground_y + max_jump_height, next_y))
+                    # Platform bottom should never be below screen height
+                    # Platform top should never be higher than (max_jump_height - 2 - 25) from base_ground_y
+                    next_y = max(base_ground_y - (max_jump_height - 2 - 25), min(base_ground_y, next_y))
                     
                     # Generate the platform segment
                     self.generate_platform_segment(x + horizontal_gap, next_y)
@@ -184,8 +187,8 @@ class World:
             last_y = last_platform.rect.y
             
             # Maximum jump height and distance
-            max_jump_height = 140  # Slightly less than actual jump height
-            max_horizontal_distance = 94 * 2  # Maximum horizontal distance when at same height (2 tiles)
+            max_jump_height = 140  # Maximum jump height
+            max_horizontal_distance = int(94 * 1.5)  # Maximum horizontal distance when at same height (1.5 tiles)
             
             # First determine the vertical distance we want
             vertical_distance = random.randint(-max_jump_height, max_jump_height)
@@ -193,8 +196,9 @@ class World:
             # Calculate maximum allowed horizontal distance based on vertical distance
             if vertical_distance != 0:
                 # Use distance formula: max_total_distance² = horizontal_distance² + vertical_distance²
-                max_horizontal_distance = (max_horizontal_distance**2 - vertical_distance**2)**0.5
-                max_horizontal_distance = max(94, min(max_horizontal_distance, 94 * 2))
+                max_total_distance = int(94 * 1.5)  # Maximum total distance (1.5 tiles)
+                max_horizontal_distance = (max_total_distance**2 - vertical_distance**2)**0.5
+                max_horizontal_distance = max(94, min(max_horizontal_distance, int(94 * 1.5)))
             
             # Generate random gap up to maximum allowed
             horizontal_gap = random.randint(94, int(max_horizontal_distance))
@@ -204,10 +208,12 @@ class World:
             
             # Ensure the platform stays within playable bounds
             base_ground_y = self.screen_height - 120
-            next_y = max(base_ground_y - max_jump_height, min(base_ground_y + max_jump_height, next_y))
+            # Platform bottom should never be below screen height
+            # Platform top should never be higher than (max_jump_height - 2 - 25) from base_ground_y
+            next_y = max(base_ground_y - (max_jump_height - 2 - 25), min(base_ground_y, next_y))
             
             # Generate new platform segment with the calculated gap
-            self.generate_platform_segment(last_platform.rect.x + last_platform.rect.width + horizontal_gap, next_y)
+            self.generate_platform_segment(last_platform.rect.x + horizontal_gap, next_y)
             
     def draw(self, screen, camera_x):
         # Draw platforms with appropriate tile based on era
