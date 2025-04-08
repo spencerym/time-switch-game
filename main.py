@@ -45,32 +45,46 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_f:
-                # Toggle era when F is pressed
+                # Switch era when F is pressed
                 world.current_era = "future" if world.current_era == "past" else "past"
-                # Update background based on era
-                current_bg = backgrounds["future"] if world.current_era == "future" else backgrounds["past"]
-
-    # Update
+    
+    # Get player input
     keys = pygame.key.get_pressed()
     player.handle_input(keys)
+    
+    # Update player and world
     player.update(dt, world, world.current_era)
     world.update(player.rect.x)
-
-    # Draw
-    screen.fill((0, 0, 0))  # Clear screen
     
-    # Draw background with offset for future era
-    if world.current_era == "future":
-        screen.blit(current_bg, (0, 2))  # Move future background down by 2 pixels
+    # Update camera to follow player
+    target_x = player.rect.x - screen.get_width() // 2
+    camera_x += (target_x - camera_x) * 0.1  # Smooth camera movement
+    
+    # Clear screen
+    screen.fill((0, 0, 0))
+    
+    # Draw background based on era
+    if world.current_era == "past":
+        bg = backgrounds["past"]
     else:
-        screen.blit(current_bg, (0, 0))
+        bg = backgrounds["future"]
     
-    # Draw world (platforms, pillars, switches)
+    # Calculate how many background tiles we need to cover the screen
+    bg_width = bg.get_width()
+    num_tiles = (screen.get_width() // bg_width) + 2  # +2 to ensure we have enough tiles
+    
+    # Draw the background tiles
+    for i in range(num_tiles):
+        x_pos = (i * bg_width) - (camera_x // 2) % bg_width
+        screen.blit(bg, (x_pos, 0))
+    
+    # Draw world
     world.draw(screen, camera_x)
     
     # Draw player
     player.draw(screen, camera_x)
     
+    # Update display
     pygame.display.flip()
 
 pygame.quit()
