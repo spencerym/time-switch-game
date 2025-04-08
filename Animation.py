@@ -17,10 +17,10 @@ def increaseScale(image, width, height):
     return image
 
 #Sprite guy
-running_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/2_Cat_Run-Sheet.png")
-idle_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/1_Cat_Idle-Sheet.png")
-jumping_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/3_Cat_Jump-Sheet.png")
-falling_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/4_Cat_Fall-Sheet.png")
+running_sprite_sheet = pygame.image.load("assets/cat/2_Cat_Run-Sheet.png")
+idle_sprite_sheet = pygame.image.load("assets/cat/1_Cat_Idle-Sheet.png")
+jumping_sprite_sheet = pygame.image.load("assets/cat/3_Cat_Jump-Sheet.png")
+falling_sprite_sheet = pygame.image.load("assets/cat/4_Cat_Fall-Sheet.png")
 
 # Right frames animation?
 frame_width_run, frame_height_run = 16, 15
