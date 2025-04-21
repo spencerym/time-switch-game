@@ -69,7 +69,8 @@ class Player:
     def update(self, dt, world, current_era):
         # Apply gravity
         self.vel_y += GRAVITY * dt
-        
+        # print(f"y speed+gravity: {self.vel_y}")
+
         # Store old position for collision resolution
         old_x = self.rect.x
         old_y = self.rect.y
@@ -79,7 +80,7 @@ class Player:
         self.rect.y += int(self.vel_y * dt)
         
         # Check collisions with platforms
-        self.on_ground = False
+        # self.on_ground = False
         for platform in world.platforms:
             if self.rect.colliderect(platform.rect):
                 # First check if this is a vertical collision
@@ -92,6 +93,7 @@ class Player:
                     elif self.vel_y < 0:  # Jumping
                         self.rect.top = platform.rect.bottom
                         self.vel_y = 0
+                        self.on_ground = False
                 else:
                     # Horizontal collision
                     if self.vel_x > 0:  # Moving right
@@ -127,34 +129,42 @@ class Player:
 
     def draw(self, screen, camera_x):
         # Update animation
-        if self.vel_y < 0:
-            # Jumping up
-            self.jump_timer += 1
-            if self.jump_timer >= 15:  # Changed from % to >= and reset timer
-                self.jump_timer = 0
-                self.jump_index = (self.jump_index + 1) % len(jump_up_frames)
-            current_frame = jump_up_frames[self.jump_index]
-        elif self.vel_y > 1 or not self.on_ground:
-            # Falling down
-            self.fall_timer += 1
-            if self.fall_timer >= 15:  # Changed from % to >= and reset timer
-                self.fall_timer = 0
-                self.fall_index = (self.fall_index + 1) % len(jump_down_frames)
-            current_frame = jump_down_frames[self.fall_index]
-        else:
-            # On ground — idle or running
+        if self.on_ground:
             if self.vel_x != 0:
                 self.animation_timer += 1
-                if self.animation_timer >= 1800:
+                # print(f"run: {self.animation_timer}")
+                if self.animation_timer >= 5:
                     self.animation_timer = 0
                     self.frame_index = (self.frame_index + 1) % len(running_frames)
                 current_frame = running_frames[self.frame_index]
             else:
                 self.idle_timer += 1
-                if self.idle_timer >= 2700:
+                # print(f"idle: {self.idle_timer}")
+                if self.idle_timer >= 5:
                     self.idle_timer = 0
                     self.idle_index = (self.idle_index + 1) % len(idle_frames)
                 current_frame = idle_frames[self.idle_index]
+
+        elif self.vel_y < 0 and not self.on_ground:
+            # Jumping up
+            self.jump_timer += 1
+            # print(f"jump: {self.jump_timer}")
+            if self.jump_timer >= 5:  # Changed from % to >= and reset timer
+                self.jump_timer = 0
+                self.jump_index = (self.jump_index + 1) % len(jump_up_frames)
+            current_frame = jump_up_frames[self.jump_index]
+        # elif self.vel_y > 1 or not self.on_ground:
+        elif self.vel_y > 0 and not self.on_ground:
+            # Falling down
+            self.fall_timer += 1
+            # print(f"fall: {self.fall_timer}")
+            if self.fall_timer >= 5:  # Changed from % to >= and reset timer
+                self.fall_timer = 0
+                self.fall_index = (self.fall_index + 1) % len(jump_down_frames)
+            current_frame = jump_down_frames[self.fall_index]
+        # else:
+            # On ground — idle or running
+            
 
         # Flip sprite if facing left
         if not self.facing_right:
