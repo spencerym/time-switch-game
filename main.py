@@ -5,7 +5,7 @@ pygame.init()
 
 WIDTH, HEIGHT = 800, 600
 BLACK = (0, 0, 0)
-GRAVITY = 0.5
+GRAVITY = .4
 
 #Screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -117,25 +117,25 @@ while running:
     if player_velocity_y < 0:
         # Jumping up
         jump_timer += 1
-        if jump_timer % 4 == 0:
+        if jump_timer % 8 == 0:
             jump_index = (jump_index + 1) % len(jump_up_frames)
         current_frame = jump_up_frames[jump_index]
     elif player_velocity_y > 1 or not on_ground:  
         # Falling down
         fall_timer += 1
-        if fall_timer % 3 == 0:
+        if fall_timer % 6 == 0:
             fall_index = (fall_index + 1) % len(jump_down_frames)
         current_frame = jump_down_frames[fall_index]
     else:
         # On ground — idle or running
         if moving:
             animation_timer += 1
-            if animation_timer % 3 == 0:
+            if animation_timer % 6 == 0:
                 frame_index = (frame_index + 1) % len(running_frames)
             current_frame = running_frames[frame_index]
         else:
             idle_timer += 1
-            if idle_timer % 6 == 0:
+            if idle_timer % 12 == 0:
                 idle_index = (idle_index + 1) % len(idle_frames)
             current_frame = idle_frames[idle_index]
 
