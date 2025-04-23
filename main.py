@@ -21,31 +21,38 @@ running_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/2_Ca
 idle_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/1_Cat_Idle-Sheet.png")
 jumping_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/3_Cat_Jump-Sheet.png")
 falling_sprite_sheet = pygame.image.load("assets/FreeCatCharacterAnimations/4_Cat_Fall-Sheet.png")
+campfire_sprite_sheet = pygame.image.load("assets/Campfire sheet.png")
 
 # Right frames animation?
 frame_width_run, frame_height_run = 16, 15
 frame_width_idle, frame_height_idle = 13, 18
 frame_width_jump, frame_height_jump = 11, 17
 frame_width_fall, frame_height_fall = 11, 18
+frame_width_fire, frame_height_fire = 32, 32
 
-
+campfire_frames = [campfire_sprite_sheet.subsurface(pygame.Rect(a * frame_width_fire, 0 , frame_width_fire, frame_height_fire)) for a in range(40)]
 running_frames = [running_sprite_sheet.subsurface(pygame.Rect(i * frame_width_run, 0, frame_width_run, frame_height_run)) for i in range(10)]
 idle_frames = [idle_sprite_sheet.subsurface(pygame.Rect(x * frame_width_idle, 0, frame_width_idle, frame_height_idle)) for x in range(7)]
 jump_up_frames = [jumping_sprite_sheet.subsurface(pygame.Rect(f * frame_width_fall, 0, frame_width_jump, frame_height_jump)) for f in range(4)]
 jump_down_frames = [falling_sprite_sheet.subsurface(pygame.Rect(j * frame_width_fall, 0, frame_width_fall, frame_height_fall)) for j in range(4)]
 
-newWidth = 50
-newHeight = 50
+newWidth_player = 50
+newHeight_player = 50
+newWidth_fire = 75
+newHeight_fire = 75
 
 for i in range(7):
-    idle_frames[i] = increaseScale(idle_frames[i], newWidth, newHeight)
+    idle_frames[i] = increaseScale(idle_frames[i], newWidth_player, newHeight_player)
 
 for i in range(10):
-    running_frames[i] = increaseScale(running_frames[i], newWidth, newHeight)
+    running_frames[i] = increaseScale(running_frames[i], newWidth_player, newHeight_player)
 
 for i in range(4):
-    jump_up_frames[i] = increaseScale(jump_up_frames[i], newWidth, newHeight)
-    jump_down_frames[i] = increaseScale(jump_down_frames[i], newWidth, newHeight)
+    jump_up_frames[i] = increaseScale(jump_up_frames[i], newWidth_player, newHeight_player)
+    jump_down_frames[i] = increaseScale(jump_down_frames[i], newWidth_player, newHeight_player)
+
+for i in range(40):
+    campfire_frames[i] = increaseScale(campfire_frames[i], newWidth_fire, newHeight_fire)
 
 # Player settings
 player_x, player_y = 100, HEIGHT - 150
@@ -63,12 +70,20 @@ jump_timer = 0
 fall_timer = 0
 facing_right = True
 
+#campfire settings
+campfire_index = 0
+campfire_timer = 0
+campfire_speed = 6
+
 # Platform stuf
 platforms = [
     pygame.Rect(100, HEIGHT - 100, 200, 20),
     pygame.Rect(400, HEIGHT - 200, 200, 20),
     pygame.Rect(600, HEIGHT - 300, 200, 20)
 ]
+
+spawn_x = 100
+spawn_y = platforms[0].top - 75
 
 #Clock thing
 running = True
@@ -101,10 +116,10 @@ while running:
     player_y += player_velocity_y
     
     # Collision
-    player_rect = pygame.Rect(player_x, player_y, newWidth, newHeight)
+    player_rect = pygame.Rect(player_x, player_y, newWidth_player, newHeight_player)
     for platform in platforms:
         if player_rect.colliderect(platform) and player_velocity_y > 0:
-            player_y = platform.top - newHeight
+            player_y = platform.top - newHeight_player
             player_velocity_y = 0
             on_ground = True
     
@@ -138,6 +153,13 @@ while running:
             if idle_timer % 12 == 0:
                 idle_index = (idle_index + 1) % len(idle_frames)
             current_frame = idle_frames[idle_index]
+    
+     # Animate and draw campfire
+    campfire_timer += 1
+    if campfire_timer >= campfire_speed:
+        campfire_timer = 0
+        campfire_index = (campfire_index + 1) % len(campfire_frames)
+    screen.blit(campfire_frames[campfire_index], (spawn_x, spawn_y))
 
     #flipping sprite face    
     if not facing_right:
