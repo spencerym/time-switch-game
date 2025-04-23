@@ -106,6 +106,7 @@ class World:
             self.switches.append(pygame.Rect(sx, sy, 40, 40))
 
     def update(self, player_x):
+        # self.world_width += player_x
         if player_x > self.platforms[-1].rect.x - 1000:
             last = self.platforms[-1]
             base_y = self.screen_height - 120

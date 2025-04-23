@@ -21,7 +21,7 @@ SCREEN_WIDTH  = backgrounds["past"].get_width()
 SCREEN_HEIGHT = backgrounds["past"].get_height()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-WORLD_WIDTH = 3000
+WORLD_WIDTH = 30000
 clock = pygame.time.Clock()
 
 player = Player(100, SCREEN_HEIGHT - 200, None)
