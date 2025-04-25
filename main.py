@@ -1,4 +1,3 @@
-# main.py
 import sys
 import pygame
 from player import Player
@@ -35,19 +34,27 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_f:
-            world.current_era = "future" if world.current_era == "past" else "past"
 
+        # only toggle when standing on a campfire switch and F is pressed
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_f:
+            for sw in world.switches:
+                if player.rect.colliderect(sw):
+                    world.current_era = (
+                        "future" if world.current_era == "past" else "past"
+                    )
+                    break
+
+    # standard movement + physics
     keys = pygame.key.get_pressed()
     player.handle_input(keys)
     player.update(dt, world, world.current_era)
     world.update(player.rect.x)
 
-    # Smooth camera
+    # Smooth camera follow
     target_x = player.rect.x - screen.get_width() // 2
     camera_x += (target_x - camera_x) * 0.1
 
-    # Draw
+    # Draw everything
     screen.fill((0, 0, 0))
     bg = backgrounds[world.current_era]
     bg_w = bg.get_width()
