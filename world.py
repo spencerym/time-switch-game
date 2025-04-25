@@ -31,13 +31,13 @@ class World:
             "assets/game_elements/grow pine tree copy.png"
         ).convert_alpha()
 
-        # Load your tiles with transparency
+        # Load tiles with transparency
         self.past_tile   = pygame.image.load("assets/game_elements/yellow_tile_1.png").convert_alpha()
         self.future_tile = pygame.image.load("assets/game_elements/green_tile_1.png").convert_alpha()
         self.past_tile   = pygame.transform.scale(self.past_tile,   (94, 30))
         self.future_tile = pygame.transform.scale(self.future_tile, (94, 30))
 
-        # ——— Campfire animation setup ———
+        # Campfire animation setup 
         sheet = pygame.image.load(
             "assets/game_elements/Animated Sprites/Campfire sheet.png"
         ).convert_alpha()
@@ -55,7 +55,6 @@ class World:
         self.campfire_index = 0
         self.campfire_timer = 0
         self.campfire_speed = 6
-        # ————————————————————————
 
         self._make_initial_platforms()
 
@@ -142,7 +141,6 @@ class World:
                             (p.rect.x + i*(94 - overlap) - camera_x,
                              p.rect.y))
 
-        # Draw pillars as images
         for pillar in self.pillars:
             dx = pillar.rect.x - camera_x
             cx = dx + pillar.rect.width//2
@@ -155,7 +153,7 @@ class World:
                 sy = pillar.rect.bottom - sh
                 screen.blit(self.sapling, (sx, sy))
 
-        # Animate campfire in place of switches
+        # Animate campfire 
         self.campfire_timer += 1
         if self.campfire_timer >= self.campfire_speed:
             self.campfire_timer = 0

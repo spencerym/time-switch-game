@@ -5,13 +5,11 @@ from world import World
 
 pygame.init()
 
-# Display setup
 SCREEN_WIDTH  = 800
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Era Switch Platformer")
 
-# Backgrounds
 backgrounds = {
     "past":   pygame.image.load("assets/game_elements/bg_autumn.png").convert(),
     "future": pygame.image.load("assets/game_elements/bg_green.png").convert()

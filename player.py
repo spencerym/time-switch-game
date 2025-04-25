@@ -1,4 +1,3 @@
-# player.py
 import pygame
 
 GRAVITY = 900
@@ -86,7 +85,7 @@ class Player:
                     elif self.vel_x < 0 and old_x >= platform.rect.right:
                         self.rect.left = platform.rect.right
 
-        # Pillar collisions ONLY in future era
+        # Pillar collisions only in future era
         if current_era == "future":
             for pillar in world.pillars:
                 if self.rect.colliderect(pillar.rect):
